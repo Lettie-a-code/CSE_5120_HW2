@@ -33,7 +33,7 @@ def minimax(game_state: GameStatus, depth: int, maximizingPlayer: bool,
             alpha = max(alpha, eval_score)
             if beta <= alpha:
                 break
-        #path_trace.append((depth, 'MAX' if maximizingPlayer else 'MIN', best_move, maxEval if maximizingPlayer else minEval))
+        path_trace.append((depth, 'MAX' if maximizingPlayer else 'MIN', best_move, maxEval if maximizingPlayer else minEval))
         return maxEval, best_move
 
     # --- MIN player (O) ---

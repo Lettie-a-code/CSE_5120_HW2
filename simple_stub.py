@@ -1,11 +1,17 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Fri Oct 17 15:41:25 2025
+
+@author: warre
+"""
+
 """
 Author: Elizabeth Warren
-Simple Tic Tac Toe Stub (Fixed)
-Compatible with GameStatus_5120 (expects integer board values)
+Course: CSE 4050 – Web Application Development / AI Project
+Description: Minimal working stub that connects GameStatus, Minimax, and GUI logic.
 """
 
 import pygame
-import numpy as np
 from GameStatus_5120 import GameStatus
 from multiAgent import minimax
 
@@ -17,8 +23,8 @@ class SimpleTicTacToe:
         pygame.init()
         self.screen = pygame.display.set_mode((400, 400))
         pygame.display.set_caption("Tic Tac Toe (Stub)")
-        self.board = np.zeros((3, 3), dtype=int)   # ✅ integers only (0=empty)
-        self.current_turn = 1                      # ✅ 1 = X (player), -1 = O (AI)
+        self.board = [['' for _ in range(3)] for _ in range(3)]
+        self.current_turn = 'X'
         self.game_state = GameStatus(self.board)
         self.running = True
 
@@ -30,16 +36,6 @@ class SimpleTicTacToe:
             pygame.draw.line(self.screen, color, (i * 133, 0), (i * 133, 400), 3)
         pygame.display.update()
 
-    def draw_symbol(self, row, col, value):
-        """Draw X or O on the grid based on numeric value."""
-        cx, cy = col * 133 + 66, row * 133 + 66
-        if value == 1:  # X
-            pygame.draw.line(self.screen, (255, 0, 0), (cx - 40, cy - 40), (cx + 40, cy + 40), 4)
-            pygame.draw.line(self.screen, (255, 0, 0), (cx + 40, cy - 40), (cx - 40, cy + 40), 4)
-        elif value == -1:  # O
-            pygame.draw.circle(self.screen, (0, 255, 0), (cx, cy), 45, 4)
-        pygame.display.update()
-
     def is_game_over(self):
         terminal = self.game_state.is_terminal()
         if terminal:
@@ -48,10 +44,8 @@ class SimpleTicTacToe:
             return True
         return False
 
-    def move(self, move, value):
-        """Apply move and sync logical GameStatus."""
-        row, col = move
-        self.board[row][col] = value
+    def move(self, move):
+        """Sync logical GameStatus with board after each move."""
         self.game_state = self.game_state.get_new_state(move)
 
     def play_ai(self):
@@ -59,8 +53,8 @@ class SimpleTicTacToe:
         score, move = minimax(self.game_state, depth=2, maximizingPlayer=False)
         if move:
             r, c = move
-            self.move(move, -1)
-            self.draw_symbol(r, c, -1)
+            self.board[r][c] = 'O'
+            self.move(move)
             print(f"🤖 AI chose {move} (score={score})")
 
     def play_game(self):
@@ -71,30 +65,24 @@ class SimpleTicTacToe:
                 if event.type == pygame.QUIT:
                     self.running = False
 
-                elif event.type == pygame.MOUSEBUTTONUP and self.current_turn == 1:
+                elif event.type == pygame.MOUSEBUTTONUP and self.current_turn == 'X':
                     x, y = pygame.mouse.get_pos()
                     row, col = y // 133, x // 133
-                    
-                    # Skip if outside grid or cell is filled
-                    if row > 2 or col > 2 or self.board[row][col] != 0:
-                        continue
+                    if self.board[row][col] == '':
+                        self.board[row][col] = 'X'
+                        self.move((row, col))
+                        if self.is_game_over():
+                            pygame.time.wait(1000)
+                            self.running = False
+                            break
 
-                    # Player move (1)
-                    self.move((row, col), 1)
-                    self.draw_symbol(row, col, 1)
+                        self.current_turn = 'O'
+                        self.play_ai()
 
-                    if self.is_game_over():
-                        pygame.time.wait(1000)
-                        self.running = False
-                        break
-
-                    self.current_turn = -1  # switch to AI
-                    self.play_ai()
-
-                    if self.is_game_over():
-                        pygame.time.wait(1000)
-                        self.running = False
-                        break
+                        if self.is_game_over():
+                            pygame.time.wait(1000)
+                            self.running = False
+                            break
 
             pygame.display.update()
 
